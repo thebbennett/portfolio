@@ -27,9 +27,9 @@ Instead, I inserted this script in a workflow immediately after my 2x daily Spok
 ## [EveryAction form responses to Google Sheets](https://github.com/thebbennett/portfolio/blob/master/EA-form-responses-to-google-sheets.SQL)  
 In early 2020 I led a CRM transition away from ActionNetwork to EveryAction. Before this point, Sunrise staff were not bound to use rigorous data systems. Even though EveryAction is a powerful tool that could seriously scale the impact of our work, organizers were hesitant to adopt a new system. One pain point was EveryAction's limited functionality with their online forms. 
 
-Organizers were very comfortable using Google Forms. But there were many benefits to using EveryAction online forms as opposed to Google Forms (having all our data in one place, analyzing new contacts brought in via organizing programs, funnelling people into our email list, etc).  
+Organizers were very comfortable using Google Forms. But there were many benefits to using EveryAction online forms as opposed to Google Forms (having all our data in one place, analyzing new contacts brought in via organizing programs, funneling  people into our email list, etc).  
 
-Unfortuantely, EveryAction has 2 spearate reports for their forms: one for basic information and a second for any custom questions you add. Organizers wanted to see all their data in one place, and have it populate automatically with new data (as opposed to exporting the data manually each day).   
+Unfortunately, EveryAction has 2 separate reports for their forms: one for basic information and a second for any custom questions you add. Organizers wanted to see all their data in one place, and have it populate automatically with new data (as opposed to exporting the data manually each day).   
 
 In response to this need, I developed a workflow that took raw EveryAction form response data, gathered the various custom questions responses in various tables, pivoted the table, and pushed the data automatically every day to a Google Sheet.    
 
@@ -42,13 +42,13 @@ With this workflow, organizers became more likely to use our data systems, meani
 * Joins in demographic data from a separate workflow  
 * Joins together all the data along with a date_updated   
 
-We adpated this code into a dbt workflow so that instead of writing out all this code manually, we feed a macro an onlineformid and it spits out the SQL. This code is part of a larger workflow that pushes responses every day to a Google Sheet. 
+We adapted this code into a dbt workflow so that instead of writing out all this code manually, we feed a macro an onlineformid and it spits out the SQL. This code is part of a larger workflow that pushes responses every day to a Google Sheet. 
 
 
 ## [Python Example: Get Extra Fields Container Script](https://github.com/thebbennett/portfolio/blob/master/python_example_get_extra_fields.py)  
 Sunrise's top priority is to build a multi racial, multi class movement. So it came as a big shock when we learned our new CRM, EveryAction, would not provide us with race or gender data in our sync. In addition, EveryAction did not have a built in way to collect socio-economic class data.  
 
-First, I led a cross-rank workign group to determine how Sunrise should collect class. I knew that class was a difficult thing to measure, and that no matter what there would be error in our data collection methods. In forming a working group, key stakeholders at Sunrise were able to decide what kind of inaccuracy they were willing toa ccept in exchange for some understanding about the socio-economic class of our base.  
+First, I led a cross-rank working group to determine how Sunrise should collect class. I knew that class was a difficult thing to measure, and that no matter what there would be error in our data collection methods. In forming a working group, key stakeholders at Sunrise were able to decide what kind of inaccuracy they were willing to accept in exchange for some understanding about the socio-economic class of our base.  
 
 Once we settled on a custom question for class that met our standards, we then had to get the data out of EveryAction along with the race and gender data of our contacts. Since we could not access the race and gender data in the sync to our data warehouse, we decided to use the EveryAction API. 
 
@@ -66,12 +66,12 @@ I wrote a Python script that was set up as a "container script" in Civis. A cont
 
 
 ## [SQL Data Wrangling](https://github.com/thebbennett/portfolio/blob/master/sql_data_wrangling.sql)  
-I built out a comprehensive dashboard to monitor progress towards our electoral goals for our IE Presidential GOTV work. One of our main tactics was peer to peer texting. We needed to be able to quickly see the results of our campaigns, including the response rate (filtering out responses that were opt out requests), opt out rates, and the number of people who responded positvely to our survey question).  
+I built out a comprehensive dashboard to monitor progress towards our electoral goals for our IE Presidential GOTV work. One of our main tactics was peer to peer texting. We needed to be able to quickly see the results of our campaigns, including the response rate (filtering out responses that were opt out requests), opt out rates, and the number of people who responded positively to our survey question).  
   
 This code create the following table with our Spoke texting data:  
 ![Image of resulting table](https://static.wixstatic.com/media/fc8483_0befe24c735f4bd9ac3b950d0359af4b~mv2.png)  
 
 **This code**:
-* Wrnagles the data such that my base CTE has the number of texts sent and the num of texts received per person. This is needed for excluding opt out replies from our response rate
+* Wrangles the data such that my base CTE has the number of texts sent and the num of texts received per person. This is needed for excluding opt out replies from our response rate
 * Calculates basic stats for each campaign for our GOTV IE work only 
 
