@@ -89,3 +89,4 @@ Our organizers working on downballot campaigns were running a massive volunteer 
 * Calculates the number of remaining shifts 
 * finally, selects the relevant columns for plotting in Periscope
 
+![Image of the output of this SQL in Periscope, in a bar chart](https://static.wixstatic.com/media/fc8483_3c411c32bd9a4705a24691b8842c188e~mv2.png)
