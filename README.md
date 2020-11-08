@@ -75,3 +75,17 @@ This code create the following table with our Spoke texting data:
 * Wrangles the data such that my base CTE has the number of texts sent and the num of texts received per person. This is needed for excluding opt out replies from our response rate
 * Calculates basic stats for each campaign for our GOTV IE work only 
 
+## [Intermediate SQL Data Wrangling](https://github.com/thebbennett/portfolio/blob/master/Intermediate-SQL-data-wrangling.sql)
+Our organizers working on downballot campaigns were running a massive volunteer phonebanking operation. They needed to be able to see the current week's and the next week's phonebanking events' shift sign ups relative to the goal for that event.  
+
+**This code**:  
+* Grabs only the downballot phonebanking events for 2020 General slate of candidates in Mobilize America
+* Converts the start date of the timeslot to the timezone of the event
+* Assigns a shift goal based on the candidates name (shift goal came from lead organizer)
+* Grabs only centralized events based on the event creator's email address, assuming events created with Sunrise Movement emails were centralized events. The script eventually included bypasses for events created by specific volunteers (those emails have been anonymized) 
+* Selects events for the current week 
+* De dupes the list (duplicates are due to a bad sync/import job, we chose to continue de duping instead of fixing in the middle of GOTV)
+* Groups the shift sign ups by event, renaming the event title to include a readable date and time
+* Calculates the number of remaining shifts 
+* finally, selects the relevant columns for plotting in Periscope
+
