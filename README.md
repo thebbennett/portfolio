@@ -43,3 +43,24 @@ With this workflow, organizers became more likely to use our data systems, meani
 * Joins together all the data along with a date_updated   
 
 We adpated this code into a dbt workflow so that instead of writing out all this code manually, we feed a macro an onlineformid and it spits out the SQL. This code is part of a larger workflow that pushes responses every day to a Google Sheet. 
+
+
+## [Python Example: Get Extra Fields Container Script](https://github.com/thebbennett/portfolio/blob/master/python_example_get_extra_fields.py)  
+Sunrise's top priority is to build a multi racial, multi class movement. So it came as a big shock when we learned our new CRM, EveryAction, would not provide us with race or gender data in our sync. In addition, EveryAction did not have a built in way to collect socio-economic class data.  
+
+First, I led a cross-rank workign group to determine how Sunrise should collect class. I knew that class was a difficult thing to measure, and that no matter what there would be error in our data collection methods. In forming a working group, key stakeholders at Sunrise were able to decide what kind of inaccuracy they were willing toa ccept in exchange for some understanding about the socio-economic class of our base.  
+
+Once we settled on a custom question for class that met our standards, we then had to get the data out of EveryAction along with the race and gender data of our contacts. Since we could not access the race and gender data in the sync to our data warehouse, we decided to use the EveryAction API. 
+
+I wrote a Python script that was set up as a "container script" in Civis. A container script runs off a container in Docker, and in this case allows us to run Python scripts in Civis that take advantage of Parsons.
+
+**This code**
+* Reads in the parameters set in Civis for API keys and other passwords
+* Connects to Redshift to grab all new contacts and contacts with updated demographic data
+* For those vanids, connects to the EveryAction API to grab with the get_person method to grab their demographic data 
+* Build a dictionary of lists for each person with the information needed from the API call 
+* Does some light data cleaning on the race and gender results
+* Create gender and race summaries columns for easy data manipulation
+* Map the values of class, hub, and hub role to the dataframe
+* Push the resulting dataframe as a Parsons Table to Redshift as a table, appending new rows 
+
