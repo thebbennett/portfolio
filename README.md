@@ -65,7 +65,7 @@ I wrote a Python script that was set up as a "container script" in Civis. A cont
 * Push the resulting dataframe as a Parsons Table to Redshift as a table, appending new rows 
 
 
-## [SQL Data Wrangling](https://github.com/thebbennett/portfolio/blob/master/sql_data_wrangling.sql)  
+## [Basic SQL Data Wrangling](https://github.com/thebbennett/portfolio/blob/master/sql_data_wrangling.sql)  
 I built out a comprehensive dashboard to monitor progress towards our electoral goals for our IE Presidential GOTV work. One of our main tactics was peer to peer texting. We needed to be able to quickly see the results of our campaigns, including the response rate (filtering out responses that were opt out requests), opt out rates, and the number of people who responded positively to our survey question).  
   
 This code create the following table with our Spoke texting data:  
