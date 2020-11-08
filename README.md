@@ -64,3 +64,14 @@ I wrote a Python script that was set up as a "container script" in Civis. A cont
 * Map the values of class, hub, and hub role to the dataframe
 * Push the resulting dataframe as a Parsons Table to Redshift as a table, appending new rows 
 
+
+## [SQL Data Wrangling](https://github.com/thebbennett/portfolio/blob/master/sql_data_wrangling.sql)  
+I built out a comprehensive dashboard to monitor progress towards our electoral goals for our IE Presidential GOTV work. One of our main tactics was peer to peer texting. We needed to be able to quickly see the results of our campaigns, including the response rate (filtering out responses that were opt out requests), opt out rates, and the number of people who responded positvely to our survey question).  
+  
+This code create the following table with our Spoke texting data:  
+![Image of resulting table](https://static.wixstatic.com/media/fc8483_0befe24c735f4bd9ac3b950d0359af4b~mv2.png)  
+
+**This code**:
+* Wrnagles the data such that my base CTE has the number of texts sent and the num of texts received per person. This is needed for excluding opt out replies from our response rate
+* Calculates basic stats for each campaign for our GOTV IE work only 
+
