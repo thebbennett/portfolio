@@ -2,6 +2,13 @@
 
 Hello! I can't show you everything I've built at Sunrise, but I can show a few snippets of code I've written.   
 
+## [WIP Bringing out Meaning in Messy Data](https://github.com/thebbennett/portfolio/blob/master/wip_movement_engagement.sql)
+I'm currently working new infrastructure to bring insight into the absorption, engagement, and retention of our movement. There is no consensus on what is means to be a member of Sunrise. In this project I had to decide what pieces of data across all our systems count as a "member action" and then bring that all together in a workable table that would allow me to explore how people enter and move through our movement. 
+
+This code unions EveryAction online actions, event attendance, digital acquisition, leadership roles, donations, and email subscription history into one table.
+
+
+
 ## [Data Cleaning in SQL Example](https://github.com/thebbennett/portfolio/blob/master/data_cleaning_in_sql_example.sql)  
 Data are always messy, and my job is to figure out how and to what degree. Sunrise uses a peer to peer texting platform called Spoke. We create "campaigns" in Spoke and then volunteers text out that initial campaign message (that we craft) to thousands of contacts. Spoke does not have a way to tag or organize your campaigns. I worked with my Texting Director to create our own Spoke tag feature via naming conventions of our campaigns.  
 
