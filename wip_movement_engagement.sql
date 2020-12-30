@@ -134,5 +134,4 @@ online_actions_history as (
     rank() over (partition by vanid order by action_date asc) as rnk
   
   from action_history
-  
-) select * from actions_ranked
+
