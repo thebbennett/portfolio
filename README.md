@@ -5,7 +5,7 @@ Hello! I can't show you everything I've built at Sunrise, but I can show a few s
 ## [WIP Bringing out Meaning in Messy Data](https://github.com/thebbennett/portfolio/blob/master/wip_movement_engagement.sql)
 I'm currently working new infrastructure to bring insight into the absorption, engagement, and retention of our movement. There is no consensus on what is means to be a member of Sunrise. In this project I had to decide what pieces of data across all our systems count as a "member action" and then bring that all together in a workable table that would allow me to explore how people enter and move through our movement. 
 
-This code unions EveryAction online actions, event attendance, digital acquisition, leadership roles, donations, and email subscription history into one table.
+This code unions EveryAction online actions, event attendance, digital acquisition, leadership roles, donations, and email subscription history into one table. The actions are then ranked, allowing us to analyze the actions history of our volunteer base. Downstream transformations include analyzing popular first actions and summing the distribution of number of actions taken.  
 
 ## [Fun with Refactoring Code with dbt](https://github.com/thebbennett/refactoring_with_dbt)  
 Explore this repo to see my work to refactor old work with dbt.   
