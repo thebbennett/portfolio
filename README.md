@@ -7,7 +7,8 @@ I'm currently working new infrastructure to bring insight into the absorption, e
 
 This code unions EveryAction online actions, event attendance, digital acquisition, leadership roles, donations, and email subscription history into one table.
 
-
+## [Fun with Refactoring Code with dbt](https://github.com/thebbennett/refactoring_with_dbt)  
+Explore this repo to see my work to refactor old work with dbt.   
 
 ## [Data Cleaning in SQL Example](https://github.com/thebbennett/portfolio/blob/master/data_cleaning_in_sql_example.sql)  
 Data are always messy, and my job is to figure out how and to what degree. Sunrise uses a peer to peer texting platform called Spoke. We create "campaigns" in Spoke and then volunteers text out that initial campaign message (that we craft) to thousands of contacts. Spoke does not have a way to tag or organize your campaigns. I worked with my Texting Director to create our own Spoke tag feature via naming conventions of our campaigns.  
