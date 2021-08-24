@@ -41,17 +41,14 @@ Sunrise's top priority is to build a multi racial, multi class movement. So it c
 
 First, I led a cross-rank working group to determine how Sunrise should collect class. I knew that class was a difficult thing to measure, and that no matter what there would be error in our data collection methods. In forming a working group, key stakeholders at Sunrise were able to decide what kind of inaccuracy they were willing to accept in exchange for some understanding about the socio-economic class of our base.  
 
-Once we settled on a custom question for class that met our standards, we then had to get the data out of EveryAction along with the race and gender data of our contacts. Since we could not access the race and gender data in the sync to our data warehouse, we decided to use the EveryAction API. 
+Once we settled on a custom question for class that met our standards, we then had to get the data out of EveryAction along with the race and gender data of our contacts. Since we could not access the race and gender data in the sync to our data warehouse, we decided to build out own custom sync. This project includes a `reuirements.txt` file, a `dev-requirements.txt` file, and unit testing. 
 
-I wrote a Python script that was set up as a "container script" in Civis. A container script runs off a container in Docker, and in this case allows us to run Python scripts in Civis that take advantage of Parsons.
-
-**This code**
+**The Get Extra Fields script:**
 * Reads in the parameters set in Civis for API keys and other passwords
 * Connects to Redshift to grab all new contacts and contacts with updated demographic data
 * For those vanids, connects to the EveryAction API to grab with the get_person method to grab their demographic data 
 * Build a dictionary of lists for each person with the information needed from the API call 
 * Does some light data cleaning on the race and gender results
-* Create gender and race summaries columns for easy data manipulation
 * Map the values of class, hub, and hub role to the dataframe
 * Push the resulting dataframe as a Parsons Table to Redshift as a table, appending new rows 
 
