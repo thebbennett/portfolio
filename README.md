@@ -2,7 +2,7 @@
 
 Hello! I can't show you everything I've built at Sunrise, but I can show a few snippets of code I've written.   
 
-## [Building a Metrics Layer](https://github.com/thebbennett/portfolio/tree/master/metrics_layer)
+## [SQL Analytics Infrastructure: Building a Metrics Layer](https://github.com/thebbennett/portfolio/tree/master/metrics_layer)
 As I worked to bring the modern data stack to Sunrise, I quickly became obsessed with the concept of the [metrics layer](https://benn.substack.com/p/metrics-layer). It was a complete lightbulb moment for me as I realized I needed to standardize our metrics in our data warehouse so everyone on my team would report the same numbers. Sunrise's most prized metric is our membrship size and accompanying demographic stats. Therefore, I built out an idempotent model to track Sunrise's membership size and demographics retroactively to when we first started collecting data.   
 
 **[Metrics Members](https://github.com/thebbennett/portfolio/blob/master/metrics_layer/metrics_members.sql)**. 
@@ -15,7 +15,7 @@ As I worked to bring the modern data stack to Sunrise, I quickly became obsessed
 * Aggregates the Metrics Members table to active members per week 
 
 
-## [EveryAction form responses to Google Sheets](https://github.com/thebbennett/portfolio/blob/master/EA-form-responses-to-google-sheets.SQL)  
+## [SQL Intermediate: EveryAction form responses to Google Sheets](https://github.com/thebbennett/portfolio/blob/master/EA-form-responses-to-google-sheets.SQL)  
 In early 2020 I led a CRM transition away from ActionNetwork to EveryAction. Before this point, Sunrise staff were not bound to use rigorous data systems. Even though EveryAction is a powerful tool that could seriously scale the impact of our work, organizers were hesitant to adopt a new system. One pain point was EveryAction's limited functionality with their online forms. 
 
 Organizers were very comfortable using Google Forms. But there were many benefits to using EveryAction online forms as opposed to Google Forms (having all our data in one place, analyzing new contacts brought in via organizing programs, funneling  people into our email list, etc).  
@@ -36,7 +36,7 @@ With this workflow, organizers became more likely to use our data systems, meani
 We adapted this code into a dbt workflow so that instead of writing out all this code manually, we feed a macro an onlineformid and it spits out the SQL. This code is part of a larger workflow that pushes responses every day to a Google Sheet. 
 
 
-## [Python Example: Get Extra Fields Container Script](https://github.com/thebbennett/portfolio/tree/master/get_extra_fields)  
+## [Python Data Engineering: Get Extra Fields Container Script](https://github.com/thebbennett/portfolio/tree/master/get_extra_fields)  
 Sunrise's top priority is to build a multi racial, multi class movement. So it came as a big shock when we learned our new CRM, EveryAction, would not provide us with race or gender data in our sync. In addition, EveryAction did not have a built in way to collect socio-economic class data.  
 
 First, I led a cross-rank working group to determine how Sunrise should collect class. I knew that class was a difficult thing to measure, and that no matter what there would be error in our data collection methods. In forming a working group, key stakeholders at Sunrise were able to decide what kind of inaccuracy they were willing to accept in exchange for some understanding about the socio-economic class of our base.  
