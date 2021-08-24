@@ -2,6 +2,18 @@
 
 Hello! I can't show you everything I've built at Sunrise, but I can show a few snippets of code I've written.   
 
+## [Building a Metrics Layer](https://github.com/thebbennett/portfolio/tree/master/metrics_layer)
+As I worked to bring the modern data stack to Sunrise, I quickly became obsessed with the concept of the [metrics layer](https://benn.substack.com/p/metrics-layer). It was a complete lightbulb moment for me as I realized I needed to standardize our metrics in our data warehouse so everyone on my team would report the same numbers. Sunrise's most prized metric is our membrship size and accompanying demographic stats. Therefore, I built out an idempotent model to track Sunrise's membership size and demographics retroactively to when we first started collecting data.   
+
+**[Metrics Members](https://github.com/thebbennett/portfolio/blob/master/metrics_layer/metrics_members.sql)**. 
+* Uses a dbt package to generate a table of all weeks starting from March 2020 (when Sunrise started collecting data via EveryAction)
+* Indiciates whether a member took action on a given week
+* Fills in the missing weeks from the temp table above so there is a row for every member and every week after the date of their membership 
+* Uses a window function to assess if a member has taken action in the last week or last 6 months
+
+**[Metrics Members Over Time](https://github.com/thebbennett/portfolio/blob/master/metrics_layer/metrics_members_over_time.sql)**
+* Aggregates the Metrics Members table to active members per week 
+
 
 ## [EveryAction form responses to Google Sheets](https://github.com/thebbennett/portfolio/blob/master/EA-form-responses-to-google-sheets.SQL)  
 In early 2020 I led a CRM transition away from ActionNetwork to EveryAction. Before this point, Sunrise staff were not bound to use rigorous data systems. Even though EveryAction is a powerful tool that could seriously scale the impact of our work, organizers were hesitant to adopt a new system. One pain point was EveryAction's limited functionality with their online forms. 
