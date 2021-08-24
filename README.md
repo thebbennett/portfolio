@@ -56,3 +56,13 @@ Once we settled on a custom question for class that met our standards, we then h
 * Map the values of class, hub, and hub role to the dataframe
 * Push the resulting dataframe as a Parsons Table to Redshift as a table, appending new rows 
 
+## [Python Data Engineering: New Mode Analytics](https://github.com/thebbennett/portfolio/tree/master/newmode)
+
+My organizers came to me wanting "real time" reporting on a call campaign we were hosting through New Mode. I used the New Mode API to:
+
+* Grabs all the outreaches for the "Call for the Green New Deal" campaign
+* Summarizes the number of calls per day
+* Summarizes the number of calls per office
+* Creates a leaderboard of top callers
+* Pushes the three tables to a Google Sheet for organizers to use during phonebanks
+
