@@ -73,28 +73,4 @@ I wrote a Python script that was set up as a "container script" in Civis. A cont
 * Push the resulting dataframe as a Parsons Table to Redshift as a table, appending new rows 
 
 
-## [Basic SQL Data Wrangling](https://github.com/thebbennett/portfolio/blob/master/sql_data_wrangling.sql)  
-I built out a comprehensive dashboard to monitor progress towards our electoral goals for our IE Presidential GOTV work. One of our main tactics was peer to peer texting. We needed to be able to quickly see the results of our campaigns, including the response rate (filtering out responses that were opt out requests), opt out rates, and the number of people who responded positively to our survey question).  
-  
-This code create the following table with our Spoke texting data:  
-![Image of resulting table](https://static.wixstatic.com/media/fc8483_0befe24c735f4bd9ac3b950d0359af4b~mv2.png)  
-
-**This code**:
-* Wrangles the data such that my base CTE has the number of texts sent and the num of texts received per person. This is needed for excluding opt out replies from our response rate
-* Calculates basic stats for each campaign for our GOTV IE work only 
-
-## [Intermediate SQL Data Wrangling](https://github.com/thebbennett/portfolio/blob/master/Intermediate-SQL-data-wrangling.sql)
-Our organizers working on downballot campaigns were running a massive volunteer phonebanking operation. They needed to be able to see the current week's and the next week's phonebanking events' shift sign ups relative to the goal for that event.  
-
-**This code**:  
-* Grabs only the downballot phonebanking events for 2020 General slate of candidates in Mobilize America
-* Converts the start date of the timeslot to the timezone of the event
-* Assigns a shift goal based on the candidates name (shift goal came from lead organizer)
-* Grabs only centralized events based on the event creator's email address, assuming events created with Sunrise Movement emails were centralized events. The script eventually included bypasses for events created by specific volunteers (those emails have been anonymized) 
-* Selects events for the current week 
-* De dupes the list (duplicates are due to a bad sync/import job, we chose to continue de duping instead of fixing in the middle of GOTV)
-* Groups the shift sign ups by event, renaming the event title to include a readable date and time
-* Calculates the number of remaining shifts 
-* finally, selects the relevant columns for plotting in Periscope
-
 ![Image of the output of this SQL in Periscope, in a bar chart](https://static.wixstatic.com/media/fc8483_3c411c32bd9a4705a24691b8842c188e~mv2.png)
