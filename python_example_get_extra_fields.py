@@ -1,260 +1,261 @@
+
 # Civis container: https://platform.civisanalytics.com/spa/#/scripts/containers/76144120
+
+#!/usr/bin/env python
+# coding: utf-8
 
 
 # load the necessary packages
-import pandas as pd
-import numpy as np
 from parsons import Redshift, Table, VAN, S3, utilities
-import datetime
-from datetime import date
+from datetime import date, datetime
 from requests.exceptions import HTTPError
 import os
-import logging 
+import json 
+import pytest
+from parsons.utilities import json_format
+import logging
+
+#If running on container, load this env
+try:
+    os.environ['REDSHIFT_PORT']
+    os.environ['REDSHIFT_DB'] = os.environ['REDSHIFT_DATABASE']
+    os.environ['REDSHIFT_HOST']
+    os.environ['REDSHIFT_USERNAME'] = os.environ['REDSHIFT_CREDENTIAL_USERNAME']
+    os.environ['REDSHIFT_PASSWORD'] = os.environ['REDSHIFT_CREDENTIAL_PASSWORD']
+    os.environ['S3_TEMP_BUCKET'] = 'parsons-tmc'
+    os.environ['AWS_ACCESS_KEY_ID']
+    os.environ['AWS_SECRET_ACCESS_KEY']
+    van_key = os.environ['VAN_PASSWORD']
+
+#If running locally, load this env
+except KeyError:
+    os.environ['REDSHIFT_PORT']
+    os.environ['REDSHIFT_DB']
+    os.environ['REDSHIFT_HOST']
+    os.environ['REDSHIFT_USERNAME']
+    os.environ['REDSHIFT_PASSWORD']
+    os.environ['S3_TEMP_BUCKET']
+    os.environ['AWS_ACCESS_KEY_ID']
+    os.environ['AWS_SECRET_ACCESS_KEY']
+    van_key = os.environ['VAN_API_KEY']
+
+# Set up logger
+logger = logging.getLogger(__name__)
+_handler = logging.StreamHandler()
+_formatter = logging.Formatter('%(levelname)s %(message)s')
+_handler.setFormatter(_formatter)
+logger.addHandler(_handler)
+logger.setLevel('INFO')
 
 
 
-# # loacl enviro variables
-# os.environ['REDSHIFT_PORT']
-# os.environ['REDSHIFT_DB']
-# os.environ['REDSHIFT_HOST']
-# os.environ['REDSHIFT_USERNAME']
-# os.environ['REDSHIFT_PASSWORD']
-# os.environ['S3_TEMP_BUCKET']
-# os.environ['AWS_ACCESS_KEY_ID']
-# os.environ['AWS_SECRET_ACCESS_KEY']
-# van_key = os.environ['VAN_API_KEY']
+class SunriseRedshift(Redshift):
 
+    def get_contact_vanids(self, query):
+        """
+        Query Sunrise Redshift and return a list of contacts
+        """
+        table = self.query(query)
+        contact_vanids = table["vanid"]
+        return contact_vanids
 
+class SunriseVAN(VAN):
+    def get_person(self, id, id_type='vanid', expand_fields=[
+                   'contribution_history', 'addresses', 'phones', 'emails',
+                   'codes', 'custom_fields', 'external_ids', 'preferences',
+                   'recorded_addresses', 'reported_demographics', 'suppressions',
+                   'cases', 'custom_properties', 'districts', 'election_records',
+                   'membership_statuses', 'notes', 'organization_roles',
+                   'disclosure_field_values']):
+        """
+        Returns a single person record using their VANID or external id.
 
-#CIVIS enviro variables 
-os.environ['REDSHIFT_PORT']
-os.environ['REDSHIFT_DB'] = os.environ['REDSHIFT_DATABASE']
-os.environ['REDSHIFT_HOST']
-os.environ['REDSHIFT_USERNAME'] = os.environ['REDSHIFT_CREDENTIAL_USERNAME'] 
-os.environ['REDSHIFT_PASSWORD'] = os.environ['REDSHIFT_CREDENTIAL_PASSWORD'] 
-os.environ['S3_TEMP_BUCKET'] = 'parsons-tmc'
-os.environ['AWS_ACCESS_KEY_ID']
-os.environ['AWS_SECRET_ACCESS_KEY']
-van_key = os.environ['VAN_PASSWORD']
+        `Args:`
+            id: str
+                A valid id
+            id_type: str
+                A known person identifier type available on this VAN instance
+                such as ``dwid``. Defaults to ``vanid``.
+            expand_fields: list
+                A list of fields for which to include data. If a field is omitted,
+                ``None`` will be returned for that field. Can be ``contribution_history``,
+                ``addresses``, ``phones``, ``emails``, ``codes``, ``custom_fields``,
+                ``external_ids``, ``preferences``, ``recorded_addresses``,
+                ``reported_demographics``, ``suppressions``, ``cases``, ``custom_properties``,
+                ``districts``, ``election_records``, ``membership_statuses``, ``notes``,
+                ``organization_roles``, ``scores``, ``disclosure_field_values``.
+        `Returns:`
+            A person dict
+        """
 
+        # Change end point based on id type
+        url = 'people/'
 
+        id_type = '' if id_type in ('vanid', None) else f"{id_type}:"
+        url += id_type + str(id)
 
-#init Redshift instance
-rs = Redshift()
-ea = VAN(db = 'EveryAction', api_key = van_key)
+        expand_fields = ','.join([json_format.arg_format(f) for f in expand_fields])
 
+        # Removing the fields that are not returned in MyVoters
+        NOT_IN_MYVOTERS = ['codes', 'contribution_history', 'organization_roles']
 
+        if self.connection.db_code == 0:
+            expand_fields = [v for v in expand_fields if v not in NOT_IN_MYVOTERS]
 
-# table = rs.query('select contacts.vanid from sunrise_ea.tsm_tmc_contacts_sm contacts limit 500')
-table = rs.query("""
-                with max_date as (
-                  select contacts.vanid
-                  , max(datemodified) as max_datemod
-                  , max(date_updated) as max_dateup
-                  from sunrise_ea.tsm_tmc_contacts_sm contacts
-                  left join sunrise.contacts_extra_fields fields
-                  ON contacts.vanid = fields.vanid
-                  group by 1
-                  )
-              select vanid
-              from max_date
-              where max_datemod > max_dateup
-              or max_dateup is null
-                """)
-list_vanid = table.to_dataframe()['vanid'].to_list()
+        # logger.info(f'GETTING person with {id_type} of {id} at url {url}')
+        return self.connection.get_request(url, params={'$expand': expand_fields})
 
-
-
-# init dict with variables for final table
-result_dict = {}
-
-result_dict['vanid'] = []
-result_dict['dob'] = []
-result_dict['race'] = []
-result_dict['gender'] = []
-result_dict['class'] = []
-result_dict['hub'] = []
-result_dict['hub_role'] = []
-result_dict['secondary_hub_role'] = []
-result_dict['other_hub_role'] = []
-result_dict['active'] = []
-
-error_messages = []
-
-
-# For every vanid in the list pulled from the SELECT statement above:
-# Check if the response is a dictionary to avoid throwing Civis an error (in the case of a bad vanid where the result is NONE)
-# Then parse the JSON dump to get vanid, dob, all of the races and genders the user selected, class, hub, and hub role.
-
-# Append any error messages to the error list. At the moment, this script does not push the erorr messages to an error table.
-
-
-for person in list_vanid:
+def extract_custom_field_values(custom_fields, custom_field_id):
+    """
+    For a given array of custom fields, return the human-readable value of the custom field
+    """
     try:
-        response = ea.get_person(person, id_type='vanid', expand_fields = ['reported_demographics','custom_fields'])
-    except HTTPError as e:
-        response = e
+        for custom_field in custom_fields:
+            if custom_field.get("customFieldId") == custom_field_id:
+                available_values = custom_field['customField']['availableValues']
+                assigned_value = int(custom_field['assignedValue'])
+                for value in available_values:
+                    if value['id'] == assigned_value:
+                        custom_field_name = value['name']
+    except:
+        custom_field_name = None
+
+    return custom_field_name
+
+
+def relabel_race(race):
+    """
+    Overwrite EA backend terms with Sunrise's preferred front end terms
+
+    Key:
+    Asian -> Asian/Asian American
+    Black or African American -> Black/African American
+    Caucasian or White -> Caucasian/White
+    Hispanic -> Latino/Latina/Latinx
+    Middle Eastern -> Middle Eastern
+    Native American -> Native American/First Nations/Alaska Native
+    Native Hawaiian -> Native Hawaiian
+    Pacific Islander -> Pacific Islander
+    Other -> Other
+    """
+    race = race.replace("Asian", "Asian/Asian American")
+    race = race.replace("Black or African American", "Black/African American")
+    race = race.replace("Caucasian or White", "Caucasian/White")
+    race = race.replace("Hispanic", "Latino/Latina/Latinx")
+    race = race.replace("Native American", "Native American/First Nations/Alaska Native")
+
+    return race
+
+
+def transform_person_for_redshift(person):
+    """
+    Transform the result returned by VAN into the shape we need to upload to Redshift
+    """
+
+    # init dict with variables for final table| create
+    result_dict = {}
+
+    # TODO: map each field as we transform it (rather than as a separate step)
+    result_dict["vanid"] = person["vanId"]
+
+    try:
+        result_dict["dob"] = person["dateOfBirth"][0:10]
+    except TypeError:
+        result_dict["dob"] = None
+    
+    result_dict["race"] = ",".join([
+        relabel_race(race.get("reportedRaceName")) 
+        for race in person.get("selfReportedRaces", []) or []
+    ])
+
+    result_dict["gender"] = ",".join([
+        gender.get("reportedGenderName")
+        for gender in person.get("selfReportedGenders", []) or []
+    ])
+
+    result_dict["class"] = extract_custom_field_values(person.get("customFields"), 19)
+
+    result_dict["hub"] = extract_custom_field_values(person.get("customFields"), 12)
+
+    result_dict["hub_role"] = extract_custom_field_values(person.get("customFields"), 7)
+    result_dict["secondary_hub_role"] = extract_custom_field_values(
+        person.get("customFields"), 8
+    )
+
+    # this one looks different because it's a boolean result. Should we make the extract_custom_field_values function handle booleans?
+    result_dict["active"] = [
+        custom_field["assignedValue"]
+        for custom_field in person.get("customFields")
+        if custom_field["customFieldId"] == 6
+    ][0]
+
+    result_dict["date_updated"] = date.today().strftime("%m/%d/%Y")
+
+    result_dict["other_hub_role"] = extract_custom_field_values(
+        person.get("customFields"), 9
+    )
+
+    return result_dict
+
+
+if __name__ == "__main__":
+    # Initiate Redshift instance
+    rs = SunriseRedshift()
+
+    # Initiate EveryAction (NGP side) instance
+    ea = SunriseVAN(db="EveryAction", api_key=van_key)
+
+    # Query most recently modified contacts from Everyaction where the
+    # modified date is more recent than the updated date
+    query = """
+            with max_date as (
+              select
+                contacts.vanid,
+                max(datemodified) as max_datemod,
+                max(date_updated) as max_dateup
+              from sunrise_ea.tsm_tmc_contacts_sm contacts
+              left join sunrise.contacts_extra_fields fields
+                on contacts.vanid = fields.vanid
+              where contacts.vanid not in (select vanid from sunrise.get_extra_fields_errors)
+              group by 1
+              )
+          select vanid
+          from max_date
+          where max_datemod > max_dateup
+          or max_dateup is null
+          limit 10000
+            """
+
+    contact_vanids = rs.get_contact_vanids(query)
+
+    extra_fields = []
+    errors = []
+    # contact_vanids = [101572625, 101706044, 101754035, 101967590]
+    for contact_vanid in contact_vanids:
         
-    if type(response) == dict:
-        result_dict['vanid'].append(response['vanId'])
-        result_dict['dob'].append(response['dateOfBirth'])
-        race_list = []
+        try:
+            person = ea.get_person(
+                contact_vanid,
+                id_type="vanid",
+                expand_fields=["reported_demographics", "custom_fields"]
+            )
+            transformed_person = transform_person_for_redshift(person)
+            extra_fields.append(transformed_person)
+        except HTTPError as e:
+            print(e)
+            error = {
+                "vanid": contact_vanid,
+                "error": str(e)[:999]
+                }   
+            errors.append(error)   
         
-        if response['selfReportedRaces'] is not None:
-            for race in response['selfReportedRaces']:
-                race_list.append(race['reportedRaceName'])
-        else:    
-            race_list.append(None)
-        result_dict['race'].append(race_list)
+    logger.info(f'Found {len(extra_fields)} new contacts to add to contacts_extra_fields')
+    logger.info(f'Identified {len(errors)} errors. Appending to errors table.')
 
+    # convert to Parsons table
+    tbl = Table(extra_fields)
+    errors_tbl = Table(errors)
 
-        gender_list = []
-        if response['selfReportedGenders'] is not None:
-            for gender in response['selfReportedGenders']:
-                gender_list.append(gender['reportedGenderName'])
-        else:
-            gender_list.append(None)
-        result_dict['gender'].append(gender_list)
-
-        result_dict['class'].append([item for item in response['customFields'] if item["customFieldId"] == 19][0]['assignedValue'])
-        result_dict['hub'].append([item for item in response['customFields'] if item["customFieldId"] == 12][0]['assignedValue'])
-        result_dict['hub_role'].append([item for item in response['customFields'] if item["customFieldId"] == 7][0]['assignedValue'])  
-        result_dict['secondary_hub_role'].append([item for item in response['customFields'] if item["customFieldId"] == 8][0]['assignedValue'])
-        result_dict['other_hub_role'].append([item for item in response['customFields'] if item["customFieldId"] == 9][0]['assignedValue'])
-        result_dict['active'].append([item for item in response['customFields'] if item["customFieldId"] == 6][0]['assignedValue'])
-
-    
-    
-    else:
-        error_messages.append(response)
-
-
-# clean dataframe 
-result_df = pd.DataFrame(result_dict)
-result_df['dob'] = result_df['dob'].astype(str).str[0:10]
-result_df['race'] = result_df['race'].apply(lambda x: ','.join(map(str, x)))
-result_df['gender'] = result_df['gender'].apply(lambda x: ','.join(map(str, x)))
-
-
-#get available values for each demogrpahic var
-response = ea.get_person(101727833, id_type='vanid', expand_fields = ['reported_demographics','custom_fields'])
-rlist = response['customFields']
-
-# create a list of available values for each demogrpahic var
-class_list = [item for item in rlist if item["customFieldId"] == 19][0]['customField']['availableValues']
-hub_list = [item for item in rlist if item["customFieldId"] == 12][0]['customField']['availableValues']
-hub_role_list = [item for item in rlist if item["customFieldId"] == 7][0]['customField']['availableValues']
-secondary_hub_role_list = [item for item in rlist if item["customFieldId"] == 8][0]['customField']['availableValues']
-active_list = [item for item in rlist if item["customFieldId"] == 6][0]['customField']['availableValues']
-
-
-
-# convert list to dictionary to map to dataframe
-hub_dict = {}
-for d in hub_list:
-    hub_dict[str(d['id'])] = d['name']
-    
-class_dict = {}
-for d in class_list:
-    class_dict[str(d['id'])] = d['name']
-
-hub_role_dict = {}
-for d in hub_role_list:
-    hub_role_dict[str(d['id'])] = d['name']
-
-secondary_hub_role_dict = {}
-for d in secondary_hub_role_list:
-    secondary_hub_role_dict[str(d['id'])] = d['name']
-
-
-# race and gender summaries for ease of analysis
-
-# setting race summary
-result_df.loc[result_df['race'] == 'Caucasian or White', 'race_summary'] = 'white'
-
-result_df.loc[(result_df['race'].notnull() ) &
-               (result_df['race'] != 'Caucasian or White'), 'race_summary'] = 'poc'
-
-result_df.loc[result_df['race'] == 'None',  'race_summary'] = None
-
-
-
-# cis identities
-result_df.loc[(result_df['gender'].str.contains('Woman')) |
-              (result_df['gender'].str.contains('Female')) |
-              (result_df['gender'].str.contains('Cisgender Woman')) |
-              (result_df['gender'].str.contains('Femme')), 'gender_summary'] = 'female' 
-
-result_df.loc[(result_df['gender'].str.contains('Male')) |
-               (result_df['gender'].str.contains('Man')) |
-                (result_df['gender'].str.contains('Cisgender Man')), 'gender_summary'] = 'male' 
-
-                
-# gender nonconforming identities
-result_df.loc[(result_df['gender'].str.contains('Agender')) |
-               (result_df['gender'].str.contains('Androgyne')) |
-              (result_df['gender'].str.contains('Androgynous')) |
-              (result_df['gender'].str.contains('Bigender')) |
-              (result_df['gender'].str.contains('Butch')) |
-              (result_df['gender'].str.contains('Female to Male')) |
-              (result_df['gender'].str.contains('FTM')) |
-              (result_df['gender'].str.contains('Gender Fluid')) |
-              (result_df['gender'].str.contains('Gender Questioning')) |
-              (result_df['gender'].str.contains('Gender Non-conforming')) |
-              (result_df['gender'].str.contains('Gender Variant')) |
-              (result_df['gender'].str.contains('Genderless')) |
-              (result_df['gender'].str.contains('Genderqueer')) |
-              (result_df['gender'].str.contains('Hirja')) |
-              (result_df['gender'].str.contains('Intersex')) |
-              (result_df['gender'].str.contains('Male to Female')) |
-              (result_df['gender'].str.contains('Masc')) |
-              (result_df['gender'].str.contains('MTF')) |
-              (result_df['gender'].str.contains('Neither')) |
-              (result_df['gender'].str.contains('Neutrois')) |
-              (result_df['gender'].str.contains('Non-Binary')) |
-              (result_df['gender'].str.contains('Non-Op')) |
-              (result_df['gender'].str.contains('Other')) |
-              (result_df['gender'].str.contains('Pangender')) |
-              (result_df['gender'].str.contains('Pansexual')) |
-              (result_df['gender'].str.contains('Queer')) |
-              (result_df['gender'].str.contains('Questioning')) |
-              (result_df['gender'].str.contains('Trans')) |
-              (result_df['gender'].str.contains('Transfeminine')) |
-              (result_df['gender'].str.contains('Transgender')) |
-              (result_df['gender'].str.contains('Transgender Male')) |
-              (result_df['gender'].str.contains('Transgender Female')) |
-              (result_df['gender'].str.contains('Transgender Man')) |
-              (result_df['gender'].str.contains('Transgender Person')) |
-              (result_df['gender'].str.contains('Transmasculine')) |
-              (result_df['gender'].str.contains('Two Spirit')), 'gender_summary'] = 'gnc' 
-                
-# fill in any other values I might have missed as gnc                
-result_df['gender_summary'] = result_df.loc[result_df['gender'].notnull(), 'gender_summary'].fillna('gnc')
-
-# set null to null
-result_df.loc[result_df['gender'] == 'None', 'gender_summary'] = None
-
-
-# map values of class, hub, and hub role to dataframe
-result_df['class'].replace(class_dict, inplace = True)
-result_df['hub'].replace(hub_dict, inplace = True)
-result_df['hub_role'].replace(hub_role_dict, inplace = True)
-result_df['secondary_hub_role'].replace(secondary_hub_role_dict, inplace = True)
-result_df['date_updated'] = date.today()
-
-result_df = result_df.where(pd.notnull(result_df), None)
-result_df = result_df.replace({'None': None})
-result_df = result_df.replace({np.nan: None})
-
-
-# col order same as civis 
-result_df= result_df[['vanid', 'dob', 'race', 'gender', 'class', 'hub', 'hub_role', 'secondary_hub_role', 'active', 'race_summary', 'gender_summary', 'date_updated', 'other_hub_role']]
-
-
-# convert data frame to Parsons Table
-result_table = Table.from_dataframe(result_df)
-
-
-# copy Table into Redshift, append new rows
-rs.copy(result_table, 'sunrise.contacts_extra_fields' ,if_exists='append', distkey='vanid', sortkey = None, alter_table = True)
-
+    # copy Table into Redshift, append new rows
+    rs.copy(tbl, 'sunrise.contacts_extra_fields' ,if_exists='append', distkey='vanid', sortkey = None, alter_table = True)
+    rs.copy(errors_tbl, 'sunrise.get_extra_fields_errors' ,if_exists='append', distkey='vanid', sortkey = None, alter_table = True)
