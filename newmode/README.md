@@ -1,5 +1,4 @@
 # New Mode Analytics
-Container script link: https://platform.civisanalytics.com/spa/#/scripts/containers/122180887  
 
 This script:  
 
@@ -7,10 +6,7 @@ This script:
 * Summarizes the number of calls per day  
 * Summarizes the number of calls per office  
 * Creates a leaderboard of top callers  
-* Pushes the three tables to a [Google Sheet](https://docs.google.com/spreadsheets/u/1/d/1fPlKWVtpDWid06R8oi0bHgch1ShYovYyks2aSZKY6nY/edit#gid=0) for organizers to use during phonebanks  
-
-The container script can be triggered by sending an email to: console-inbound+run.122180887.5dd1799666b1c1325e84abbee95e87c4@civisanalytics.com  
-
+* Pushes the three tables to a Google Sheet for organizers to use during phonebanks  
 
 ## Container Set Up
 1. Clone this Github repository -- you'll need to specify your new url in the civis interface  
