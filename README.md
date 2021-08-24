@@ -43,5 +43,3 @@ I wrote a Python script that was set up as a "container script" in Civis. A cont
 * Map the values of class, hub, and hub role to the dataframe
 * Push the resulting dataframe as a Parsons Table to Redshift as a table, appending new rows 
 
-
-![Image of the output of this SQL in Periscope, in a bar chart](https://static.wixstatic.com/media/fc8483_3c411c32bd9a4705a24691b8842c188e~mv2.png)
